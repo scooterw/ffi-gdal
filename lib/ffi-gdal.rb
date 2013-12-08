@@ -34,6 +34,44 @@ module GDAL
 
     extend ::FFI::Library
 
+    class GDAL_GCP < FFI::Struct
+      layout :pszId, :string,
+        :pszInfo, :string,
+        :dfGCPPixel, :double,
+        :dfGCPLine, :double,
+        :dfGCPX, :double,
+        :dfGCPY, :double,
+        :dfGCPZ, :double
+    end
+
+    class GDALRPCInfo < FFI::Struct
+      layout :dfLINE_OFF, :double,
+        :dfSAMP_OFF, :double,
+        :dfLAT_OFF, :double,
+        :dfLONG_OFF, :double,
+        :dfHEIGHT_OFF, :double,
+        :dfLINE_SCALE, :double,
+        :dfSAMP_SCALE, :double,
+        :dfLAT_SCALE, :double,
+        :dfLONG_SCALE, :double,
+        :dfHEIGHT_SCALE, :double,
+        :dfLINE_NUM_COEFF, :double,
+        :dfLINE_DEN_COEFF, :double,
+        :dfSAMP_NUM_COEFF, :double,
+        :dfSAMP_DEN_COEFF, :double,
+        :dfMIN_LONG, :double,
+        :dfMIN_LAT, :double,
+        :dfMAX_LONG, :double,
+        :dfMAX_LAT, :double
+    end
+
+    class GDALColorEntry < FFI::Struct
+      layout :c1, :short,
+        :c2, :short,
+        :c3, :short,
+        :c4, :short
+    end
+
     enum :gdal_data_type, [
       :unknown, 0,
       :byte, 1,
@@ -125,20 +163,50 @@ module GDAL
     ]
 
     GDAL_FUNCTIONS = {
-      :GDALAllRegister => [[], :void],
-      :GDALGetDriverCount => [[], :int],
-      :GDALGetDriver => [[:int], :pointer],
-      :GDALGetDriverByName => [[:string], :pointer],
-      :GDALDestroyDriver => [[:pointer], :void],
-      :GDALRegisterDriver => [[:pointer], :void],
-      :GDALDeregisterDriver => [[:pointer], :void],
-      :GDALDestroyDriverManager => [[], :void],
-      :GDALGetDriverShortName => [[:pointer], :string],
-      :GDALGetDriverLongName => [[:pointer], :string],
+      GDALAllRegister: [[], :void],
+      GDALGetDriverCount: [[], :int],
+      GDALGetDriver: [[:int], :pointer],
+      GDALGetDriverByName: [[:string], :pointer],
+      GDALDestroyDriver: [[:pointer], :void],
+      GDALRegisterDriver: [[:pointer], :void],
+      GDALDeregisterDriver: [[:pointer], :void],
+      GDALDestroyDriverManager: [[], :void],
+      GDALGetDriverShortName: [[:pointer], :string],
+      GDALGetDriverLongName: [[:pointer], :string],
+      GDALGetDriverHelpTopic: [[:pointer], :string],
+      GDALGetDriverCreationOptionList: [[:pointer], :string],
+      GDALIdentifyDriver: [[:string, :pointer], :pointer],
 
-      :GDALCreate => [[:pointer, :string, :int, :int, :int, :pointer, :pointer], :pointer],
+      GDALCreate: [[:pointer, :string, :int, :int, :int, :gdal_data_type, :pointer], :pointer],
+      GDALCreateCopy: [[:pointer, :string, :pointer, :int, :pointer, :pointer, :pointer], :pointer],
+      GDALValidateCreationOptions: [[:pointer, :pointer], :int],
+
+      GDALOpen: [[:string, :gdal_access], :pointer],
+      GDALOpenShared: [[:string, :gdal_access], :pointer],
+
+      GDALDumpOpenDatasets: [[:pointer], :int],
+      GDALDeleteDataset: [[:pointer, :string], :pointer],
+      GDALRenameDataset: [[:pointer, :string, :string], :pointer],
+      GDALCopyDatasetFiles: [[:pointer, :string, :string], :pointer],
+
+      GDALGetDataTypeSize: [[:gdal_data_type], :int],
+      GDALDataTypeIsComplex: [[:gdal_data_type], :int],
+      GDALGetDataTypeName: [[:gdal_data_type], :string],
+      GDALGetDataTypeByName: [[:string], :gdal_data_type],
+      GDALDataTypeUnion: [[:gdal_data_type, :gdal_data_type], :gdal_data_type],
+
+      GDALGetAsyncStatusTypeName: [[:gdal_async_status_type], :string],
+      GDALGetAsyncStatusTypeByName: [[:string], :gdal_async_status_type],
+      GDALGetColorInterpretationName: [[:gdal_color_interp], :string],
+      GDALGetColorInterpretationByName: [[:string], :gdal_color_interp],
+      GDALGetPaletteInterpretationName: [[:gdal_palette_interp], :string],
+
+      # :GDAL_GCP
+      GDALInitGCPs: [[:int, :pointer], :void],
+      GDALDeinitGCPs: [[:int, :pointer], :void],
+      GDALDuplicateGCPs: [[:int, :pointer], :pointer],
       
-      :GDALVersionInfo => [[:string], :string]
+      GDALVersionInfo: [[:string], :string]
     }
 
     begin
